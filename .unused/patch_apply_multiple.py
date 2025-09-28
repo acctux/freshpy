@@ -1,9 +1,8 @@
 from pathlib import Path
 
-from lib.py.src import apply_one_patch
-from lib.py.src.ensure_file_ready import ensure_file_ready
-from lib.py.src.load_json_list import load_json_list
-from lib.py.src.update_patch_state import update_patch_state
+from src.file_folder_touch import ensure_file_ready
+from src.patch_apply_one_logic import handle_patch_operation
+
 
 PATCH_LIST_JSON = Path("~/fresh/lib/py/patchlist.json").expanduser()
 DIFFS_DIR = Path("~/dotcetera").expanduser()
@@ -15,7 +14,7 @@ def process_patches():
     """
     print("[INFO] Starting Patch Application...")
     patch_list: list[dict[str, str]] = []
-    patch_list = load_json_list(PATCH_LIST_JSON)
+    patch_list = create_list_from_json(PATCH_LIST_JSON)
 
     if not patch_list:
         print("[WARNING] Patch list is empty or could not be loaded. Aborting.")
@@ -48,11 +47,9 @@ def process_patches():
         # 3. Ensure the destination file is ready (exists, permissions, etc.)
         if ensure_file_ready(dest_path):
             # 4. Apply the patch
-            if apply_one_patch:
-                # 5. Record successful application
-                _ = update_patch_state(dest_file_str)
-            else:
-                print(f"  [CRITICAL] Failed to apply patch to {dest_path}.")
+            handle_patch_operation()
+            # 5. Record successful application
+             update_patch_state(dest_file_str)
         else:
             # The original code had a misplaced print inside an else block
             print("  [CRITICAL] Skipping diff due to destination file issue.")

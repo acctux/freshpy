@@ -4,10 +4,10 @@ from pathlib import Path
 
 # Assuming the list contains dictionaries for patches, we use List[Dict[str, str]].
 # If the content is uncertain, List[Any] or just List can be used.
-def load_json_list(file_path: Path) -> list[dict[str, str]]:
+def load_json_list(file_path: Path) -> list[str]:
     """
     Loads a JSON file expected to contain a list of dictionaries.
-    Returns the list on success, or an empty list on failure.
+    Returns the dictionary on success, or an empty list on failure.
     """
     if not file_path.exists():
         print(f"[FATAL] Config not found: {file_path.resolve()}")
