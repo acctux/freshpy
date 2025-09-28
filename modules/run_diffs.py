@@ -30,7 +30,7 @@ def diff_for_file(etc_file: Path, dotfile: Path, patch_file: Path) -> Path | Non
         elif result.returncode == 1:
             print(f"📄 Patch created for {etc_file} (compared to {dotfile})")
             patch_file.parent.mkdir(parents=True, exist_ok=True)
-            patch_file.write_text(result.stdout)
+            _ = patch_file.write_text(result.stdout)
             return patch_file
         else:
             print(
