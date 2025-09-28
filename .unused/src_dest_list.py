@@ -1,6 +1,6 @@
 from pathlib import Path
 
-PATCH_LIST_JSON = Path("~/fresh/py/patchlist.json").expanduser()
+PATCH_LIST_JSON = Path("~/fresh/patchlist.json").expanduser()
 
 
 def create_patch_list(dots_dir: Path) -> list[dict[str, str]]:
