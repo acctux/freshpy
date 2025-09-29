@@ -1,26 +1,54 @@
 from pathlib import Path
 import logging
+import yaml
 
-from modules.etc_missing_exists_list import missing_exists_list
-from modules.relative_f_locations import get_relative_f_locations
+from src.location_lists_from_rel import make_path_lists_from_rel_list
+from src.locs_from_path import list_to_rel_locs_lists
+from src.run_cmd_diff import run_cmd_one_diff
+from src.write_yaml import update_playbook
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-ETC_DOTS_DIR = Path("~/Lit/dotfiles/etc").expanduser()
-DOTS_DIR = Path("~/Lit/dotfiles/etc").expanduser()
+DOTS_DIR = Path("~/Lit/dotfiles").expanduser()
+ETC_DOTS_DIR = DOTS_DIR / "etc"
+DIFFS_DIR = Path("~/dotceta").expanduser()
+COPY_LIST_YAML = DOTS_DIR / "playbook.yml"
 
 
-def main():
-    new_copies, overwrite_copies = get_relative_f_locations(ETC_DOTS_DIR)
-    missing_exists_list(ETC_DOTS_DIR)
-    for path in rel_paths:
-        if path.exists() and path.is_file():
-            logger.info(f"{path} exists and will be overwritten, doing nothing.")
-        else:
-            logger.info(f"Creating necessary path, {path}.")
-            parent_dir_touch(path)
+def main(rel_locations_list: list[Path]):
+    if not DIFFS_DIR.exists():
+        DIFFS_DIR.mkdir()
+
+    # Generate list of relative locations from ETC_DOTS_DIR
+    rel_locations_list = list_to_rel_locs_lists(ETC_DOTS_DIR)
+    etc_files, dot_files, diff_files, files_to_yaml = make_path_lists_from_rel_list(
+        rel_locations_list
+    )
+
+    # Save files_to_yaml to COPY_LIST_YAML
+    logger.info(f"Saving files_to_yaml to {COPY_LIST_YAML}")
+    with COPY_LIST_YAML.open("w") as yaml_file:
+        yaml.dump({"files_to_yaml": files_to_yaml}, yaml_file, indent=2)
+        print(f"✅ Patch list saved to {COPY_LIST_YAML.resolve()}")
+    # Ensure the lengths match and the files exist
+    if (
+        etc_files
+        and dot_files
+        and diff_files
+        and len(etc_files) == len(dot_files) == len(diff_files)
+    ):
+        for etc_file, dot_file, diff_file in zip(etc_files, dot_files, diff_files):
+            if not etc_file.exists():
+                etc_file.touch()
+
+            # Run diff command and log the result
+            _ = run_cmd_one_diff(etc_file, dot_file, diff_file)
+            logger.info(f"Diff file for {etc_file} created at {diff_file}")
+
+    update_playbook(COPY_LIST_YAML, files_to_yaml)
 
 
 if __name__ == "__main__":
-    main()
+    main([])
