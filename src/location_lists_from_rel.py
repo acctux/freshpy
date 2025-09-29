@@ -1,9 +1,4 @@
 from pathlib import Path
-import logging
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 def make_path_lists_from_rel_list(
