@@ -2,10 +2,10 @@ from pathlib import Path
 import logging
 import yaml
 
-from src.location_lists_from_rel import make_path_lists_from_rel_list
-from src.locs_from_path import list_to_rel_locs_lists
-from src.run_cmd_diff import run_cmd_one_diff
-from src.write_yaml import update_playbook
+from etc_home.ansible_player import run_ansible_playbook
+from etc_home.location_lists_from_rel import make_path_lists_from_rel_list
+from etc_home.locs_from_path import list_to_rel_locs_lists
+from etc_home.run_cmd_diff import run_cmd_one_diff
 
 
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +24,8 @@ def main(rel_locations_list: list[Path]):
     # Generate list of relative locations from ETC_DOTS_DIR
     rel_locations_list = list_to_rel_locs_lists(ETC_DOTS_DIR)
     etc_files, dot_files, diff_files, files_to_yaml = make_path_lists_from_rel_list(
-        rel_locations_list
+        DIFFS_DIR,
+        rel_locations_list,
     )
 
     # Save files_to_yaml to COPY_LIST_YAML
@@ -47,7 +48,7 @@ def main(rel_locations_list: list[Path]):
             _ = run_cmd_one_diff(etc_file, dot_file, diff_file)
             logger.info(f"Diff file for {etc_file} created at {diff_file}")
 
-    update_playbook(COPY_LIST_YAML, files_to_yaml)
+    run_ansible_playbook(COPY_LIST_YAML, files_to_yaml)
 
 
 if __name__ == "__main__":
